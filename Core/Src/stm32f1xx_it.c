@@ -23,6 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include "FreeRTOS.h"
+#include "task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,7 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+void xPortSysTickHandler( void );
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -184,16 +186,18 @@ void DebugMon_Handler(void)
 /**
   * @brief This function handles System tick timer.
   */
-// void SysTick_Handler(void)
-// {
-//   /* USER CODE BEGIN SysTick_IRQn 0 */
+void SysTick_Handler(void)
+{
+  /* USER CODE BEGIN SysTick_IRQn 0 */
+  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+    xPortSysTickHandler();
+  }
+  /* USER CODE END SysTick_IRQn 0 */
 
-//   /* USER CODE END SysTick_IRQn 0 */
+  /* USER CODE BEGIN SysTick_IRQn 1 */
 
-//   /* USER CODE BEGIN SysTick_IRQn 1 */
-
-//   /* USER CODE END SysTick_IRQn 1 */
-// }
+  /* USER CODE END SysTick_IRQn 1 */
+}
 
 /******************************************************************************/
 /* STM32F1xx Peripheral Interrupt Handlers                                    */

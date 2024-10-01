@@ -30,6 +30,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "lcd1602.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,6 +41,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+uint32_t lcdCount = 0;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -100,7 +103,7 @@ void TaskBlinkRedLed(void *arg)
   while (1)
   {
     HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_RESET);
-    vTaskDelay(500);
+    vTaskDelay(300);
   }
 }
 
@@ -111,6 +114,31 @@ void TaskBlinkGreenLed(void *arg)
   while (1)
   {
     HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
+    vTaskDelay(200);
+  }
+}
+
+void TaskBlinkBlueLed(void *arg)
+{
+  (void)arg;
+
+  while (1)
+  {
+    HAL_GPIO_TogglePin(LED_B_GPIO_Port, LED_B_Pin);
+    vTaskDelay(100);
+  }
+}
+
+void Task1602Count(void *arg)
+{
+  (void)arg;
+
+  char buf[10];
+  while (1)
+  {
+    snprintf(buf, sizeof(buf), "%ld", lcdCount);
+    LCD_ShowString(buf);
+    lcdCount++;
     vTaskDelay(1000);
   }
 }
@@ -160,8 +188,10 @@ int main(void)
   HAL_InitSysTick(uwTickPrio);
 
   // start TIM6 for i2c delay
-  // HAL_TIM_Base_Start(&htim6);
+  HAL_TIM_Base_Start(&htim6);
   
+  // LCD
+  LCD_Init();
 
   // LCD_BackLightOff();
   // HAL_Delay(3000);
@@ -177,7 +207,15 @@ int main(void)
     printf("create task taskBlinkGreenLed FAILED!\r\n");
   }
 
-  if (xTaskCreate(TaskBlinkRedLed, "LED_B_TASK", 256, NULL, 1, NULL) < 0) {
+  if (xTaskCreate(TaskBlinkRedLed, "LED_R_TASK", 256, NULL, 1, NULL) < 0) {
+    printf("create task taskBlinkRedLed FAILED!\r\n");
+  }
+
+  if (xTaskCreate(TaskBlinkBlueLed, "LED_B_TASK", 256, NULL, 1, NULL) < 0) {
+    printf("create task taskBlinkRedLed FAILED!\r\n");
+  }
+
+  if (xTaskCreate(Task1602Count, "1602_TASK", 256, NULL, 1, NULL) < 0) {
     printf("create task taskBlinkRedLed FAILED!\r\n");
   }
 
