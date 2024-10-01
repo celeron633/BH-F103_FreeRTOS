@@ -27,7 +27,8 @@
 /* USER CODE BEGIN Includes */
 
 #include <stdio.h>
-#include "lcd1602.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /* USER CODE END Includes */
 
@@ -99,8 +100,7 @@ int main(void)
 
   // start TIM6 for i2c delay
   HAL_TIM_Base_Start(&htim6);
-  LCD_Init();
-  LCD_ShowString("Hello 1602!");
+
 
   // LCD_BackLightOff();
   // HAL_Delay(3000);
