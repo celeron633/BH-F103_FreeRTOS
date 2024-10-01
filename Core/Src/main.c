@@ -51,11 +51,69 @@
 /* USER CODE BEGIN PV */
 extern UART_HandleTypeDef huart1;
 
+
+TaskHandle_t taskBlinkRedLedHandle;
+TaskHandle_t taskBlinkGreenLedHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName)
+{
+  (void)xTask;
+  printf("task: [%s] StackOverflow!\r\n", pcTaskName);
+  while (1)
+  {
+    
+  }
+  
+}
+
+HAL_StatusTypeDef HAL_InitSysTick(uint32_t TickPriority)
+{
+  /* Configure the SysTick to have interrupt in 1ms time basis*/
+  if (HAL_SYSTICK_Config(SystemCoreClock / (1000U / uwTickFreq)) > 0U)
+  {
+    return HAL_ERROR;
+  }
+
+  /* Configure the SysTick IRQ priority */
+  if (TickPriority < (1UL << __NVIC_PRIO_BITS))
+  {
+    HAL_NVIC_SetPriority(SysTick_IRQn, TickPriority, 0U);
+    uwTickPrio = TickPriority;
+  }
+  else
+  {
+    return HAL_ERROR;
+  }
+
+  /* Return function status */
+  return HAL_OK;
+}
+
+void TaskBlinkRedLed(void *arg)
+{
+  (void)arg;
+  while (1)
+  {
+    HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_RESET);
+    vTaskDelay(500);
+  }
+}
+
+void TaskBlinkGreenLed(void *arg)
+{
+  (void)arg;
+
+  while (1)
+  {
+    HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
+    vTaskDelay(1000);
+  }
+}
 
 /* USER CODE END PFP */
 
@@ -98,9 +156,12 @@ int main(void)
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
-  // start TIM6 for i2c delay
-  HAL_TIM_Base_Start(&htim6);
+  // start systick
+  HAL_InitSysTick(uwTickPrio);
 
+  // start TIM6 for i2c delay
+  // HAL_TIM_Base_Start(&htim6);
+  
 
   // LCD_BackLightOff();
   // HAL_Delay(3000);
@@ -110,7 +171,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  __HAL_RCC_GPIOB_CLK_ENABLE();
+  // TaskBlinkGreenLED(NULL);
+
+  if (xTaskCreate(TaskBlinkGreenLed, "LED_G_TASK", 256, NULL, 1, NULL) < 0) {
+    printf("create task taskBlinkGreenLed FAILED!\r\n");
+  }
+
+  if (xTaskCreate(TaskBlinkRedLed, "LED_B_TASK", 256, NULL, 1, NULL) < 0) {
+    printf("create task taskBlinkRedLed FAILED!\r\n");
+  }
+
+  vTaskStartScheduler();
+  // will never reach following lines
 
   while (1)
   {
@@ -169,6 +241,27 @@ int __io_putchar(int ch)
     return 0;
 }
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM7 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM7) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
