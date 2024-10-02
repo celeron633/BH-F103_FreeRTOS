@@ -1,6 +1,9 @@
 #include "lcd1602.h"
 #include "main.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include <stdio.h>
 
 #define PCF8574_ADDR 0x4E
@@ -82,8 +85,18 @@ void LCD_Init()
     HAL_Delay(1);
 }
 
+void LCD_Clear()
+{
+    LCD_SendCmd(0x01);
+    HAL_Delay(1);
+    LCD_SendCmd(0x80);
+    HAL_Delay(1);
+}
+
 void LCD_ShowString(const char *str)
 {
+    LCD_Clear();
+
     while (*str)
     {
         LCD_SendData(*str++);
