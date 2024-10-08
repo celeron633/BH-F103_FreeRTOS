@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "i2c.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -29,8 +28,6 @@
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
-
-#include "lcd1602.h"
 
 /* USER CODE END Includes */
 
@@ -129,20 +126,6 @@ void TaskBlinkBlueLed(void *arg)
   }
 }
 
-void Task1602Count(void *arg)
-{
-  (void)arg;
-
-  char buf[10];
-  while (1)
-  {
-    snprintf(buf, sizeof(buf), "%ld", lcdCount);
-    LCD_ShowString(buf);
-    lcdCount++;
-    vTaskDelay(1000);
-  }
-}
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -181,7 +164,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_TIM6_Init();
-  MX_I2C2_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   // start systick
@@ -189,19 +172,11 @@ int main(void)
 
   // start TIM6 for i2c delay
   HAL_TIM_Base_Start(&htim6);
-  
-  // LCD
-  LCD_Init();
-
-  // LCD_BackLightOff();
-  // HAL_Delay(3000);
-  // LCD_BackLightOn();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  // TaskBlinkGreenLED(NULL);
 
   if (xTaskCreate(TaskBlinkGreenLed, "LED_G_TASK", 256, NULL, 1, NULL) < 0) {
     printf("create task taskBlinkGreenLed FAILED!\r\n");
@@ -212,11 +187,7 @@ int main(void)
   }
 
   if (xTaskCreate(TaskBlinkBlueLed, "LED_B_TASK", 256, NULL, 1, NULL) < 0) {
-    printf("create task taskBlinkRedLed FAILED!\r\n");
-  }
-
-  if (xTaskCreate(Task1602Count, "1602_TASK", 256, NULL, 1, NULL) < 0) {
-    printf("create task taskBlinkRedLed FAILED!\r\n");
+    printf("create task TaskBlinkBlueLed FAILED!\r\n");
   }
 
   vTaskStartScheduler();
