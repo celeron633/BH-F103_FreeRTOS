@@ -2,6 +2,8 @@
 #include "stm32f103xe.h"
 
 #include <stdint.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 
 struct KBD_Pin {
@@ -30,7 +32,7 @@ int KBD_Scan()
     for (int i = 0; i < KBD_ROWS; i++) {
         // 拉低
         HAL_GPIO_WritePin(KBD_rows[i].gpioPort, KBD_rows[i].gpioPin, GPIO_PIN_RESET);
-        HAL_Delay(5);
+        vTaskDelay(5);
         // 扫描每一列
         for (int j = 0; j < KBD_COLS; j++) {
             if (HAL_GPIO_ReadPin(KBD_cols[j].gpioPort, KBD_cols[j].gpioPin) == GPIO_PIN_RESET) {

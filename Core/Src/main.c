@@ -28,6 +28,9 @@
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
+#include "event_groups.h"
+
 #include "keyboard.h"
 
 /* USER CODE END Includes */
@@ -51,8 +54,8 @@ uint32_t lcdCount = 0;
 
 /* USER CODE BEGIN PV */
 extern UART_HandleTypeDef huart1;
-
-
+QueueHandle_t kbdQueue;
+EventGroupHandle_t kbdEventGroup;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -91,6 +94,49 @@ HAL_StatusTypeDef HAL_InitSysTick(uint32_t TickPriority)
 
   /* Return function status */
   return HAL_OK;
+}
+
+void KeyboardScanTask(void * arg)
+{
+  (void)arg;
+
+  while (1)
+  {
+    int k = KBD_Scan();
+    if (k != -1) {
+      xQueueSendToFront(kbdQueue, &k, 0);
+      xEventGroupSetBits(kbdEventGroup, 0x1);
+      // 不要扫描太快
+      vTaskDelay(100);
+    }
+  }
+}
+
+void KeyboardGetCodeTask(void *arg)
+{
+  (void)arg;
+
+  while (1)
+  {
+    int k = 0;
+    xQueueReceive(kbdQueue, (void *)&k, portMAX_DELAY);
+
+    printf("key from queue: %d\r\n", k);
+  }
+}
+
+void KeyboardLEDTask(void *arg)
+{
+  (void)arg;
+
+  while (1)
+  {
+    xEventGroupWaitBits(kbdEventGroup, 0x1, pdTRUE, pdTRUE, portMAX_DELAY);
+    HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_RESET);
+    vTaskDelay(100);
+    HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_SET);
+  }
+  
 }
 
 /* USER CODE END PFP */
@@ -141,6 +187,13 @@ int main(void)
   HAL_TIM_Base_Start(&htim6);
 
   KBD_Init();
+  kbdQueue = xQueueCreate(128, sizeof(int));
+  kbdEventGroup = xEventGroupCreate();
+
+  xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
+  xTaskCreate(KeyboardGetCodeTask, "KBD_GET", 256, NULL, 10, NULL);
+  xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
+  vTaskStartScheduler();
 
   /* USER CODE END 2 */
 
@@ -152,11 +205,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    int k = KBD_Scan();
-    if (k != -1) {
-      printf("key: %d\r\n", k);
-      HAL_Delay(100);
-    }
   }
   /* USER CODE END 3 */
 }
