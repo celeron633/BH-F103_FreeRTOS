@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include "keyboard.h"
 
 /* USER CODE END Includes */
 
@@ -52,8 +53,6 @@ uint32_t lcdCount = 0;
 extern UART_HandleTypeDef huart1;
 
 
-TaskHandle_t taskBlinkRedLedHandle;
-TaskHandle_t taskBlinkGreenLedHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,38 +91,6 @@ HAL_StatusTypeDef HAL_InitSysTick(uint32_t TickPriority)
 
   /* Return function status */
   return HAL_OK;
-}
-
-void TaskBlinkRedLed(void *arg)
-{
-  (void)arg;
-  while (1)
-  {
-    HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_RESET);
-    vTaskDelay(300);
-  }
-}
-
-void TaskBlinkGreenLed(void *arg)
-{
-  (void)arg;
-
-  while (1)
-  {
-    HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin);
-    vTaskDelay(200);
-  }
-}
-
-void TaskBlinkBlueLed(void *arg)
-{
-  (void)arg;
-
-  while (1)
-  {
-    HAL_GPIO_TogglePin(LED_B_GPIO_Port, LED_B_Pin);
-    vTaskDelay(100);
-  }
 }
 
 /* USER CODE END PFP */
@@ -173,33 +140,23 @@ int main(void)
   // start TIM6 for i2c delay
   HAL_TIM_Base_Start(&htim6);
 
+  KBD_Init();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  if (xTaskCreate(TaskBlinkGreenLed, "LED_G_TASK", 256, NULL, 1, NULL) < 0) {
-    printf("create task taskBlinkGreenLed FAILED!\r\n");
-  }
-
-  if (xTaskCreate(TaskBlinkRedLed, "LED_R_TASK", 256, NULL, 1, NULL) < 0) {
-    printf("create task taskBlinkRedLed FAILED!\r\n");
-  }
-
-  if (xTaskCreate(TaskBlinkBlueLed, "LED_B_TASK", 256, NULL, 1, NULL) < 0) {
-    printf("create task TaskBlinkBlueLed FAILED!\r\n");
-  }
-
-  vTaskStartScheduler();
-  // will never reach following lines
 
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    
-    HAL_Delay(500);
+    int k = KBD_Scan();
+    if (k != -1) {
+      printf("key: %d\r\n", k);
+      HAL_Delay(100);
+    }
   }
   /* USER CODE END 3 */
 }

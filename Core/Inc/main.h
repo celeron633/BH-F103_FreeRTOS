@@ -57,10 +57,24 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define KBD_R1_Pin GPIO_PIN_0
+#define KBD_R1_GPIO_Port GPIOF
+#define KBD_R2_Pin GPIO_PIN_1
+#define KBD_R2_GPIO_Port GPIOF
+#define KBD_R3_Pin GPIO_PIN_2
+#define KBD_R3_GPIO_Port GPIOF
+#define KBD_R4_Pin GPIO_PIN_3
+#define KBD_R4_GPIO_Port GPIOF
 #define LED_G_Pin GPIO_PIN_0
 #define LED_G_GPIO_Port GPIOB
 #define LED_B_Pin GPIO_PIN_1
 #define LED_B_GPIO_Port GPIOB
+#define KBD_C1_Pin GPIO_PIN_0
+#define KBD_C1_GPIO_Port GPIOD
+#define KBD_C2_Pin GPIO_PIN_1
+#define KBD_C2_GPIO_Port GPIOD
+#define KBD_C3_Pin GPIO_PIN_2
+#define KBD_C3_GPIO_Port GPIOD
 #define LED_R_Pin GPIO_PIN_5
 #define LED_R_GPIO_Port GPIOB
 
