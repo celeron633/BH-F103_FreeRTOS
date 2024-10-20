@@ -32,6 +32,7 @@ target_sources(userlib INTERFACE
     ../../User/Src/ds18b20.c
     ../../User/Src/dht22.c
     ../../User/Src/keyboard.c
+    ../../User/Src/oled.c
     ../../Business/Src/timer.c
 )
 
