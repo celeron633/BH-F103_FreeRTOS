@@ -19,6 +19,7 @@ target_include_directories(userlib INTERFACE
     ../../Drivers/CMSIS/Device/ST/STM32F1xx/Include
     ../../Drivers/CMSIS/Include
     ../../User/Inc
+    ../../Business/Inc/
 )
 
 target_sources(userlib INTERFACE
@@ -31,6 +32,7 @@ target_sources(userlib INTERFACE
     ../../User/Src/ds18b20.c
     ../../User/Src/dht22.c
     ../../User/Src/keyboard.c
+    ../../Business/Src/timer.c
 )
 
 target_link_directories(userlib INTERFACE
