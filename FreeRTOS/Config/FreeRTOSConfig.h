@@ -60,7 +60,12 @@
 #define configUSE_RECURSIVE_MUTEXES		1
 #define configQUEUE_REGISTRY_SIZE		0
 #define configGENERATE_RUN_TIME_STATS	0
+
+// Timers
 #define configUSE_TIMERS                1
+#define configTIMER_TASK_PRIORITY       1
+#define configTIMER_QUEUE_LENGTH        3
+#define configTIMER_TASK_STACK_DEPTH    256
 
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
