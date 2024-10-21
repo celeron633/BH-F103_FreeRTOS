@@ -99,5 +99,6 @@ void TimerLogic(void *arg)
         OLED_ShowString(0, 16, "COUNTING...");
         OLED_ShowString(0, 32, buffer);
         OLED_ShowFrame();
+        vTaskDelay(500);
     }
 }
