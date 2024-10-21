@@ -34,6 +34,7 @@ target_sources(userlib INTERFACE
     ../../User/Src/keyboard.c
     ../../User/Src/oled.c
     ../../Business/Src/timer.c
+    ../../Business/Src/my_time.c
 )
 
 target_link_directories(userlib INTERFACE

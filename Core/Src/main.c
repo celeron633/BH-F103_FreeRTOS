@@ -193,10 +193,9 @@ int main(void)
   kbdEventGroup = xEventGroupCreate();
 
   xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
-  xTaskCreate(KeyboardGetCodeTask, "KBD_GET", 256, NULL, 10, NULL);
+  // xTaskCreate(KeyboardGetCodeTask, "KBD_GET", 256, NULL, 10, NULL);
   xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
-  int mainTaskStat = xTaskCreate(TimerLogic, "MAIN", 8 * 1024, NULL, 10, NULL);
-  printf("main task status: %d\r\n", mainTaskStat);
+  xTaskCreate(TimerLogic, "MAIN", 8 * 1024, NULL, 10, NULL);
   vTaskStartScheduler();
 
   /* USER CODE END 2 */
