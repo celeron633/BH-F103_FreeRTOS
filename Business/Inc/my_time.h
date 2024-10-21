@@ -11,5 +11,6 @@ void FixMyTime(MyTime *t);
 int MyTime2Seconds(const MyTime *t);
 void Seconds2MyTime(int seconds, MyTime *t);
 int MyTime2Str(const MyTime *t, char *buffer, int bufLen);
+void MyTimeDec(MyTime *t);
 
 #endif

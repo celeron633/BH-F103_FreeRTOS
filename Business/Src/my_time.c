@@ -48,3 +48,12 @@ int MyTime2Str(const MyTime *t, char *buffer, int bufLen)
 {
     return snprintf(buffer, bufLen, "%02d:%02d", t->minute, t->second);
 }
+
+void MyTimeDec(MyTime *t)
+{
+    if (t->second == 00) {
+        t->second = 60;
+        t->minute = t->minute - 1;
+    }
+    t->second--;
+}

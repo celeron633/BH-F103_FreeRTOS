@@ -34,6 +34,7 @@
 
 #include "keyboard.h"
 #include "timer.h"
+#include "my_time.h"
 
 /* USER CODE END Includes */
 
@@ -58,6 +59,10 @@ uint32_t lcdCount = 0;
 extern UART_HandleTypeDef huart1;
 QueueHandle_t kbdQueue;
 EventGroupHandle_t kbdEventGroup;
+
+TimerHandle_t countTimer;
+extern int countStatus;
+extern MyTime m;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -141,6 +146,15 @@ void KeyboardLEDTask(void *arg)
   
 }
 
+void TimerCountCb(TimerHandle_t xTimer)
+{
+  (void)xTimer;
+  // printf("counting...\r\n");
+  if (countStatus == 1) {
+    MyTimeDec(&m);
+  }
+}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -195,7 +209,9 @@ int main(void)
   xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
   // xTaskCreate(KeyboardGetCodeTask, "KBD_GET", 256, NULL, 10, NULL);
   xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
-  xTaskCreate(TimerLogic, "MAIN", 8 * 1024, NULL, 10, NULL);
+  xTaskCreate(TimerLogic, "MAIN_TASK", 8 * 1024, NULL, 10, NULL);
+  countTimer = xTimerCreate("COUNT_JOB", 1000, 1, (void *)1, TimerCountCb);
+  xTimerStart(countTimer, 0);
   vTaskStartScheduler();
 
   /* USER CODE END 2 */

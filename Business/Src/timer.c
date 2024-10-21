@@ -13,8 +13,9 @@ extern EventGroupHandle_t kbdEventGroup;
 extern I2C_HandleTypeDef hi2c2;
 
 static char charBuf[8] = {0};
-static MyTime m;
-static int seconds2Count;
+MyTime m;
+// 0: stopped, 1: count down, 2: count up
+int countStatus = 0;
 
 static int GetKey()
 {
@@ -88,7 +89,8 @@ void TimerLogic(void *arg)
 
     // 设置时间
     SetupTime();
-    seconds2Count = MyTime2Seconds(&m);
+    // seconds2Count = MyTime2Seconds(&m);
+    countStatus = 1;
 
     char buffer[64] = {0};
     while (1)
@@ -99,6 +101,6 @@ void TimerLogic(void *arg)
         OLED_ShowString(0, 16, "COUNTING...");
         OLED_ShowString(0, 32, buffer);
         OLED_ShowFrame();
-        vTaskDelay(500);
+        vTaskDelay(100);
     }
 }
