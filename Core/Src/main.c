@@ -59,6 +59,7 @@ uint32_t lcdCount = 0;
 extern UART_HandleTypeDef huart1;
 QueueHandle_t kbdQueue;
 EventGroupHandle_t kbdEventGroup;
+EventGroupHandle_t countEventGroup;
 
 TimerHandle_t countTimer;
 extern int countStatus;
@@ -149,6 +150,7 @@ void KeyboardLEDTask(void *arg)
 void TimerCountCb(TimerHandle_t xTimer)
 {
   (void)xTimer;
+  xEventGroupSetBits(countEventGroup, 0x01);
   // printf("counting...\r\n");
   if (countStatus == 1) {
     MyTimeDec(&m);
@@ -205,6 +207,7 @@ int main(void)
   KBD_Init();
   kbdQueue = xQueueCreate(128, sizeof(int));
   kbdEventGroup = xEventGroupCreate();
+  countEventGroup = xEventGroupCreate();
 
   xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
   // xTaskCreate(KeyboardGetCodeTask, "KBD_GET", 256, NULL, 10, NULL);

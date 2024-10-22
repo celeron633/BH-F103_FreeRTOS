@@ -10,6 +10,7 @@
 
 extern QueueHandle_t kbdQueue;
 extern EventGroupHandle_t kbdEventGroup;
+extern EventGroupHandle_t countEventGroup;
 extern I2C_HandleTypeDef hi2c2;
 
 static char charBuf[8] = {0};
@@ -79,6 +80,27 @@ SetupTime_begin:
     }
 }
 
+static void CancelTimer()
+{
+    strncpy(charBuf, "____", sizeof(charBuf));
+    OLED_NewFrame();
+    OLED_ShowString(0, 0, "ENTER PASS:");
+    OLED_ShowString(0, 16, charBuf);
+    OLED_ShowFrame();
+
+    while (1)
+    {
+        for (int i = 0; i < 4; i++) {
+            int k = GetKey();
+            charBuf[i] = '0' + k;
+            OLED_ShowString(0, 0, "ENTER PASS:");
+            OLED_ShowString(0, 16, charBuf);
+            OLED_ShowFrame();
+        }
+    }
+    
+}
+
 void TimerLogic(void *arg)
 {
     (void)arg;
@@ -93,6 +115,7 @@ void TimerLogic(void *arg)
     countStatus = 1;
 
     char buffer[64] = {0};
+    int k = 0;
     while (1)
     {
         MyTime2Str(&m, buffer, sizeof(buffer));
@@ -101,6 +124,10 @@ void TimerLogic(void *arg)
         OLED_ShowString(0, 16, "COUNTING...");
         OLED_ShowString(0, 32, buffer);
         OLED_ShowFrame();
-        vTaskDelay(100);
+        xEventGroupWaitBits(countEventGroup, 0x01, pdTRUE, pdTRUE, portMAX_DELAY);
+        // 其中有按键按下
+        if (xQueueReceive(kbdQueue, (void *)&k, 0) != errQUEUE_EMPTY) {
+            CancelTimer();
+        }
     }
 }
