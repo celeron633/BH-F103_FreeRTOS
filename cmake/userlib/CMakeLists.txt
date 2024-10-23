@@ -33,7 +33,7 @@ target_sources(userlib INTERFACE
     ../../User/Src/dht22.c
     ../../User/Src/keyboard.c
     ../../User/Src/oled.c
-    ../../Business/Src/timer.c
+    ../../Business/Src/timer_logic.c
     ../../Business/Src/my_time.c
 )
 
