@@ -10,19 +10,22 @@
 
 extern QueueHandle_t kbdQueue;
 extern EventGroupHandle_t kbdEventGroup;
-extern EventGroupHandle_t countEventGroup;
 
 extern KeyTable_t menuFuncs[];
 int lastMenuIndex = 0;
 int currMenuIndex = 0;
 void (*currMenuFunc)(void) = NULL;
 
+#define SELECT_UP()     currMenuIndex = menuFuncs[currMenuIndex].up
+#define SELECT_DOWN()   currMenuIndex = menuFuncs[currMenuIndex].down
+#define SELECT_ENTER()  currMenuIndex = menuFuncs[currMenuIndex].enter
+
 // 外部函数
 void setupTime(void);
 void cancelTimer(void);
 void startTimer(void);
 
-// static int GetKeyBlock()
+// static int GetKey()
 // {
 //     xEventGroupWaitBits(kbdEventGroup, 0x1, pdTRUE, pdTRUE, portMAX_DELAY);
 //     int k = 0;
@@ -30,7 +33,7 @@ void startTimer(void);
 //     return k;
 // }
 
-static int GetKey()
+static int GetKeyNonBlock()
 {
     int k = 0;
     if (xQueueReceive(kbdQueue, (void *)&k, 10) == errQUEUE_EMPTY) {
@@ -76,23 +79,23 @@ void menuEntry()
 {
     while (1)
     {
-        int k = GetKey();
+        int k = GetKeyNonBlock();
         printf("k=%d\r\n", k);
 
         if (k != -1) {
             if (k == 10) {
-                currMenuIndex = menuFuncs[currMenuIndex].down;
+                SELECT_DOWN();
             } else if (k == 12) {
-                currMenuIndex = menuFuncs[currMenuIndex].up;
+                SELECT_UP();
             } else if (k == 0) {
-                currMenuIndex = menuFuncs[currMenuIndex].enter;
+                SELECT_ENTER();
             }
         }
         // 欢迎界面
         if (lastMenuIndex == 0) {
             menuFuncs[lastMenuIndex].menuFunc();
             // 自动跳转到主菜单
-            currMenuIndex = menuFuncs[lastMenuIndex].enter;
+            SELECT_ENTER();
         }
 
         // 处理菜单逻辑 选择上, 下, 确认 调用不同的函数
