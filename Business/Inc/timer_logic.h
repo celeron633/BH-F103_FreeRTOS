@@ -6,6 +6,10 @@
 
 #include <stdio.h>
 
-void TimerLogic(void *arg);
+void timerLogic(void *arg);
+
+void startTimer(void);
+void cancelTimer(void);
+void setupTime(void);
 
 #endif

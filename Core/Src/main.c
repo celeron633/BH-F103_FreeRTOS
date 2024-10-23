@@ -154,6 +154,7 @@ void TimerCountCb(TimerHandle_t xTimer)
   // printf("counting...\r\n");
   if (countStatus == 1) {
     MyTimeDec(&m);
+    HAL_GPIO_TogglePin(LED_R_GPIO_Port, LED_R_Pin);
   }
 }
 
@@ -203,6 +204,8 @@ int main(void)
 
   // start TIM6 for i2c delay
   HAL_TIM_Base_Start(&htim6);
+  OLED_ConfigDisplay(&hi2c2, 0x78);
+  (void)OLED_InitDisplay();
 
   KBD_Init();
   kbdQueue = xQueueCreate(128, sizeof(int));
@@ -212,7 +215,7 @@ int main(void)
   xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
   // xTaskCreate(KeyboardGetCodeTask, "KBD_GET", 256, NULL, 10, NULL);
   xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
-  xTaskCreate(TimerLogic, "MAIN_TASK", 8 * 1024, NULL, 10, NULL);
+  xTaskCreate(timerLogic, "MAIN_TASK", 8 * 1024, NULL, 10, NULL);
   countTimer = xTimerCreate("COUNT_JOB", 1000, 1, (void *)1, TimerCountCb);
   xTimerStart(countTimer, 0);
   vTaskStartScheduler();

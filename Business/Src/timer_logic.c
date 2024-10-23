@@ -1,5 +1,7 @@
 #include "timer_logic.h"
 #include "my_time.h"
+#include "timer_menu.h"
+#include "font.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -8,15 +10,27 @@
 
 #include <string.h>
 
+// RTOS
 extern QueueHandle_t kbdQueue;
 extern EventGroupHandle_t kbdEventGroup;
 extern EventGroupHandle_t countEventGroup;
-extern I2C_HandleTypeDef hi2c2;
 
+// 菜单
+extern KeyTable_t menuFuncs[];
+extern int lastMenuIndex;
+extern int currMenuIndex;
+
+// 计时状态
 static char charBuf[8] = {0};
-MyTime m;
+MyTime m = {0, 0};
 // 0: stopped, 1: count down, 2: count up
 int countStatus = 0;
+
+// 字体
+extern const ASCIIFont *currFont;
+
+// 返回上级菜单
+#define WILL_BACK_TO_MENU() currMenuIndex = menuFuncs[currMenuIndex].enter
 
 static int GetKey()
 {
@@ -26,18 +40,18 @@ static int GetKey()
     return k;
 }
 
-static void DisplayInit()
+static int GetKeyNonBlock()
 {
-    OLED_ConfigDisplay(&hi2c2, 0x78);
-    (void)OLED_InitDisplay();
-    OLED_NewFrame();
-    OLED_ShowString(0, 0, "TIMER INIT....");
-    OLED_ShowFrame();
+    int k = 0;
+    if (xQueueReceive(kbdQueue, (void *)&k, 10) == errQUEUE_EMPTY) {
+        return -1;
+    }
+    return k;
 }
 
-static void SetupTime(void)
+void setupTime(void)
 {
-SetupTime_begin:
+setupTime_begin:
     strncpy(charBuf, "__:__", sizeof(charBuf));
     OLED_NewFrame();
     OLED_ShowString(0, 0, "PLEASE INPUT:");
@@ -74,60 +88,94 @@ SetupTime_begin:
 
     int k = GetKey();
     if (k == 12) {
+        WILL_BACK_TO_MENU();
         return;
     } else {
-        goto SetupTime_begin;
+        goto setupTime_begin;
     }
 }
 
-static void CancelTimer()
+void cancelTimer()
 {
+    if (countStatus == 0) {
+        OLED_NewFrame();
+        OLED_ShowString(0, 0, "NOT STARTED!");
+        OLED_ShowString(0, 16, "PRESS ANY KEY");
+        OLED_ShowFrame();
+        GetKey();
+        WILL_BACK_TO_MENU();
+        return;
+    }
+
     strncpy(charBuf, "____", sizeof(charBuf));
     OLED_NewFrame();
-    OLED_ShowString(0, 0, "ENTER PASS:");
+    OLED_ShowString(0, 0, "ENTER 4 PASS:");
     OLED_ShowString(0, 16, charBuf);
     OLED_ShowFrame();
 
+    for (int i = 0; i < 4; i++) {
+        int k = GetKey();
+        charBuf[i] = '0' + k;
+        OLED_ShowString(0, 0, "ENTER 4 PASS:");
+        OLED_ShowString(0, 16, charBuf);
+        OLED_ShowFrame();
+    }
+
+    if (charBuf[0] == '1' && charBuf[1] == '2' && charBuf[2] == '3' && charBuf[3] == '4') {
+        OLED_NewFrame();
+        OLED_ShowString(0, 0, "CORRECT");
+        OLED_ShowString(0, 16, "CANCELED");
+        OLED_ShowFrame();
+        countStatus = 0;
+    } else {
+        OLED_NewFrame();
+        OLED_ShowString(0, 0, "NOT CORRECT");
+        OLED_ShowFrame();
+    }
+    vTaskDelay(500);
+
+    WILL_BACK_TO_MENU();
+}
+
+void startTimer(void)
+{
+    if (countStatus == 0 && m.minute == 0 && m.second == 0) {
+        OLED_NewFrame();
+        OLED_ShowString(0, 0, "NOT CONFIGED!");
+        OLED_ShowString(0, 16, "PRESS ANY KEY");
+        OLED_ShowFrame();
+        GetKey();
+        WILL_BACK_TO_MENU();
+        return;
+    }
+
+    countStatus = 1;
+    
+    currFont = &afont24x12;
     while (1)
     {
-        for (int i = 0; i < 4; i++) {
-            int k = GetKey();
-            charBuf[i] = '0' + k;
-            OLED_ShowString(0, 0, "ENTER PASS:");
-            OLED_ShowString(0, 16, charBuf);
-            OLED_ShowFrame();
+        int k = GetKeyNonBlock();
+        if (k != -1) {
+            currFont = &afont16x8;
+            WILL_BACK_TO_MENU();
+            return;
         }
+
+        // 等待时间刷新
+        xEventGroupWaitBits(countEventGroup, 0x01, pdTRUE, pdTRUE, portMAX_DELAY);
+        char buffer[24] = {0};
+        MyTime2Str(&m, buffer, sizeof(buffer));
+        // OLED_ClearArea(0, 16, 128, 48);
+        OLED_NewFrame();
+        OLED_ShowString(0, 0, "COUNTING...");
+        OLED_ShowString(0, 24, buffer);
+        OLED_ShowFrame();
     }
     
 }
 
-void TimerLogic(void *arg)
+void timerLogic(void *arg)
 {
     (void)arg;
-
-    // 初始化显示屏
-    DisplayInit();
-    vTaskDelay(50);
-
-    // 设置时间
-    SetupTime();
-    // seconds2Count = MyTime2Seconds(&m);
-    countStatus = 1;
-
-    char buffer[64] = {0};
-    int k = 0;
-    while (1)
-    {
-        MyTime2Str(&m, buffer, sizeof(buffer));
-        OLED_NewFrame();
-        OLED_ShowString(0, 0, "ARMED");
-        OLED_ShowString(0, 16, "COUNTING...");
-        OLED_ShowString(0, 32, buffer);
-        OLED_ShowFrame();
-        xEventGroupWaitBits(countEventGroup, 0x01, pdTRUE, pdTRUE, portMAX_DELAY);
-        // 其中有按键按下
-        if (xQueueReceive(kbdQueue, (void *)&k, 0) != errQUEUE_EMPTY) {
-            CancelTimer();
-        }
-    }
+    menuEntry();
 }
