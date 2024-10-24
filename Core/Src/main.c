@@ -35,6 +35,8 @@
 #include "keyboard.h"
 #include "oled.h"
 
+#include "Message.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -142,10 +144,26 @@ void KeyboardLEDTask(void *arg)
   
 }
 
-void TimerCountCb(TimerHandle_t xTimer)
+static void TestTask(void *arg)
+{
+  (void)arg;
+
+  while (1)
+  {
+    MSG tmpMsg;
+    if(MQ_GetMessage(&tmpMsg)) {
+      printf("msg: %d %d %d\r\n", tmpMsg.msgType, tmpMsg.msgParam, tmpMsg.msgCount);
+    } 
+    vTaskDelay(1000);
+  }
+  
+}
+
+TimerHandle_t kbdLoopHandler;
+void KBD_Loop_Task(TimerHandle_t xTimer)
 {
   (void)xTimer;
-  
+  KBD_Loop();
 }
 
 int MessageTest_main();
@@ -201,17 +219,22 @@ int main(void)
   OLED_ConfigDisplay(&hi2c2, 0x78);
   OLED_InitDisplay();
 
-  MessageTest_main();
+  // MessageTest_main();
 
   // 键盘
   // KBD_Init();
   // kbdQueue = xQueueCreate(128, sizeof(int));
   // kbdEventGroup = xEventGroupCreate();
 
+  // 定时任务
+  kbdLoopHandler = xTimerCreate("KBD_LOOP", 20, pdTRUE, (void *)1, KBD_Loop_Task);
+  xTimerStart(kbdLoopHandler, 0);
+
   // // 任务
   // xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
   // xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
-  // vTaskStartScheduler();
+  xTaskCreate(TestTask, "TEST_TASK", 1024, NULL, 8, NULL);
+  vTaskStartScheduler();
 
   /* USER CODE END 2 */
 
@@ -221,6 +244,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+    
 
     /* USER CODE BEGIN 3 */
   }

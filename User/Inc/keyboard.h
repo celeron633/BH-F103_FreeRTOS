@@ -8,5 +8,6 @@
 
 void KBD_Init();
 int KBD_Scan();
+int KBD_Loop();
 
 #endif

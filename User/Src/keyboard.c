@@ -1,10 +1,8 @@
-#include "keyboard.h"
 #include "stm32f103xe.h"
+#include "keyboard.h"
+#include "Message.h"
 
 #include <stdint.h>
-#include "FreeRTOS.h"
-#include "task.h"
-
 
 struct KBD_Pin {
     GPIO_TypeDef *gpioPort;
@@ -28,11 +26,12 @@ void KBD_Init()
 
 int KBD_Scan()
 {
+    uint8_t keyNum = VK_UNPRESS;
+
     // 扫描每一行
     for (int i = 0; i < KBD_ROWS; i++) {
         // 拉低
         HAL_GPIO_WritePin(KBD_rows[i].gpioPort, KBD_rows[i].gpioPin, GPIO_PIN_RESET);
-        vTaskDelay(5);
         // 扫描每一列
         for (int j = 0; j < KBD_COLS; j++) {
             if (HAL_GPIO_ReadPin(KBD_cols[j].gpioPort, KBD_cols[j].gpioPin) == GPIO_PIN_RESET) {
@@ -48,14 +47,169 @@ int KBD_Scan()
         for (int j = 0; j < KBD_COLS; j++) {
             if (kbdStatusArray[i][j] == 1) {
                 int tmp = i*3+(j+1);
-                if (tmp == 11) {
-                    return 0;
-                } else {
-                    return tmp;
-                }
+                keyNum = tmp;
             }
         }
     }
     // 没有键按下
-    return -1;
+    return keyNum;
+}
+
+int KBD_Loop()
+{
+    static uint8_t nowState, lastState;
+    MSG msg;
+
+    lastState = nowState;
+    nowState = KBD_Scan();
+
+    // 按键按下
+    if (lastState == VK_UNPRESS && nowState == VK_KEY1) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY1;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY2) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY2;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY3) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY3;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY4) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY4;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY5) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY5;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY6) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY6;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY7) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY7;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY8) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY8;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY9) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY9;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY_STAR) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY_STAR;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY0) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY0;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY_HASH) {
+        msg.msgType = CM_KEYDOWN;
+        msg.msgParam = VK_KEY_HASH;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+
+    // 按键抬起
+    if (nowState == VK_KEY1 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY1;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (lastState == VK_UNPRESS && nowState == VK_KEY2 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY2;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY3 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY3;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY4 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY4;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY5 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY5;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY6 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY6;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY7 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY7;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY8 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY8;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY9 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY9;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY_STAR && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY_STAR;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY0 && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY0;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+    if (nowState == VK_KEY_HASH && lastState == VK_UNPRESS) {
+        msg.msgType = CM_KEYUP;
+        msg.msgParam = VK_KEY_HASH;
+        msg.msgCount = 1;
+        MQ_SendMessage(&msg);
+    }
+
+    return 0;
 }
