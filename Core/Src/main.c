@@ -148,6 +148,8 @@ void TimerCountCb(TimerHandle_t xTimer)
   
 }
 
+int MessageTest_main();
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -199,15 +201,17 @@ int main(void)
   OLED_ConfigDisplay(&hi2c2, 0x78);
   OLED_InitDisplay();
 
-  // 键盘
-  KBD_Init();
-  kbdQueue = xQueueCreate(128, sizeof(int));
-  kbdEventGroup = xEventGroupCreate();
+  MessageTest_main();
 
-  // 任务
-  xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
-  xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
-  vTaskStartScheduler();
+  // 键盘
+  // KBD_Init();
+  // kbdQueue = xQueueCreate(128, sizeof(int));
+  // kbdEventGroup = xEventGroupCreate();
+
+  // // 任务
+  // xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
+  // xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
+  // vTaskStartScheduler();
 
   /* USER CODE END 2 */
 

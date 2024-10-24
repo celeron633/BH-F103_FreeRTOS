@@ -19,7 +19,8 @@ target_include_directories(userlib INTERFACE
     ../../Drivers/CMSIS/Device/ST/STM32F1xx/Include
     ../../Drivers/CMSIS/Include
     ../../User/Inc
-    ../../Business/Inc/
+    ../../Business/Inc
+    ../../MSG
 )
 
 target_sources(userlib INTERFACE
@@ -33,6 +34,9 @@ target_sources(userlib INTERFACE
     ../../User/Src/dht22.c
     ../../User/Src/keyboard.c
     ../../User/Src/oled.c
+    ../../MSG/Message.c
+    ../../MSG/MSG.c
+    ../../MSG/MessageTest.c
 )
 
 target_link_directories(userlib INTERFACE
