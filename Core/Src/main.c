@@ -33,8 +33,7 @@
 #include "event_groups.h"
 
 #include "keyboard.h"
-#include "timer_logic.h"
-#include "my_time.h"
+#include "oled.h"
 
 /* USER CODE END Includes */
 
@@ -59,11 +58,7 @@ uint32_t lcdCount = 0;
 extern UART_HandleTypeDef huart1;
 QueueHandle_t kbdQueue;
 EventGroupHandle_t kbdEventGroup;
-EventGroupHandle_t countEventGroup;
 
-TimerHandle_t countTimer;
-extern int countStatus;
-extern MyTime m;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -150,12 +145,7 @@ void KeyboardLEDTask(void *arg)
 void TimerCountCb(TimerHandle_t xTimer)
 {
   (void)xTimer;
-  xEventGroupSetBits(countEventGroup, 0x01);
-  // printf("counting...\r\n");
-  if (countStatus == 1) {
-    MyTimeDec(&m);
-    HAL_GPIO_TogglePin(LED_R_GPIO_Port, LED_R_Pin);
-  }
+  
 }
 
 /* USER CODE END PFP */
@@ -204,20 +194,19 @@ int main(void)
 
   // start TIM6 for i2c delay
   HAL_TIM_Base_Start(&htim6);
-  OLED_ConfigDisplay(&hi2c2, 0x78);
-  (void)OLED_InitDisplay();
 
+  // OLED
+  OLED_ConfigDisplay(&hi2c2, 0x78);
+  OLED_InitDisplay();
+
+  // 键盘
   KBD_Init();
   kbdQueue = xQueueCreate(128, sizeof(int));
   kbdEventGroup = xEventGroupCreate();
-  countEventGroup = xEventGroupCreate();
 
+  // 任务
   xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
-  // xTaskCreate(KeyboardGetCodeTask, "KBD_GET", 256, NULL, 10, NULL);
   xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
-  xTaskCreate(timerLogic, "MAIN_TASK", 8 * 1024, NULL, 10, NULL);
-  countTimer = xTimerCreate("COUNT_JOB", 1000, 1, (void *)1, TimerCountCb);
-  xTimerStart(countTimer, 0);
   vTaskStartScheduler();
 
   /* USER CODE END 2 */

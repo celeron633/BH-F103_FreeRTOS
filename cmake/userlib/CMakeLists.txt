@@ -33,9 +33,6 @@ target_sources(userlib INTERFACE
     ../../User/Src/dht22.c
     ../../User/Src/keyboard.c
     ../../User/Src/oled.c
-    ../../Business/Src/timer_logic.c
-    ../../Business/Src/my_time.c
-    ../../Business/Src/timer_menu.c
 )
 
 target_link_directories(userlib INTERFACE
