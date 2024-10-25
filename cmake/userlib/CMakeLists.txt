@@ -21,6 +21,7 @@ target_include_directories(userlib INTERFACE
     ../../User/Inc
     ../../Business/Inc
     ../../MSG
+    ../../Menu
 )
 
 target_sources(userlib INTERFACE
@@ -37,6 +38,7 @@ target_sources(userlib INTERFACE
     ../../MSG/Message.c
     ../../MSG/MSG.c
     ../../MSG/MessageTest.c
+    ../../Menu/Menu.c
 )
 
 target_link_directories(userlib INTERFACE
