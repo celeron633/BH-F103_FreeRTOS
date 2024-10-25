@@ -154,7 +154,7 @@ static void TestTask(void *arg)
     if(MQ_GetMessage(&tmpMsg)) {
       printf("msg: %d %d %d\r\n", tmpMsg.msgType, tmpMsg.msgParam, tmpMsg.msgCount);
     } 
-    vTaskDelay(1000);
+    vTaskDelay(100);
   }
   
 }
@@ -218,6 +218,9 @@ int main(void)
   // OLED
   OLED_ConfigDisplay(&hi2c2, 0x78);
   OLED_InitDisplay();
+
+  // MQ
+  MQ_Init();
 
   // MessageTest_main();
 

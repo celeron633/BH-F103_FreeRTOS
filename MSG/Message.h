@@ -18,7 +18,5 @@ typedef struct MessageQueue {
 void MQ_Init();
 uint8_t MQ_SendMessage(MSG *msg);
 uint8_t MQ_GetMessage(MSG *msg);
-uint8_t MQ_IsEmpty();
-uint8_t MQ_IsFull();
 
 #endif
