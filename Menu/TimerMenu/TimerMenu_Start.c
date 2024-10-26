@@ -114,6 +114,9 @@ static int SetupTimerView(void)
         if (MQ_GetMessage(&msg) > 0) {
             if (msg.msgType == CM_KEYUP) {
                 if ((msg.msgParam >= VK_KEY1 && msg.msgParam <= VK_KEY9) || msg.msgParam == VK_KEY0) {
+                    if (msg.msgParam == VK_KEY0) {
+                        msg.msgParam = 0;
+                    }
                     buffer[inputOffset] = '0' + msg.msgParam;
                     int starXPos = 0;
                     if (inputOffset == 0) {
@@ -204,7 +207,12 @@ void TimerMenuStart_Function()
                 // 画一个进度条
                 int origSec = MyTime2Seconds(&myTimeBak);
                 int nowSec = MyTime2Seconds(&myTime);
-                OLED_DrawRectangle(0, 24, (128 * nowSec / origSec), 8, 1);
+                double val = 128.0 * nowSec / origSec;
+#if 0
+                printf("%d, %d, %d\r\n", origSec, nowSec, (int)val);
+#endif
+                OLED_ClearArea(0, 22, 128, 12);
+                OLED_DrawRectangle(0, 24, (int)val, 8, 1);
                 OLED_DrawRectangle(0, 22, 128, 12, 0);
             }
 
