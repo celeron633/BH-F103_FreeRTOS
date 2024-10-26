@@ -146,7 +146,7 @@ static void MainTask(void *arg)
       else if (msg.msgType == CM_KEYUP && msg.msgParam == VK_KEY6) {
         GUI_ReceiveCommand(GUI_COMMAND_RIGHT);
       } else {
-        printf("invalid command, ignore\r\n");
+        printf("invalid command {%d %d %d}, ignore\r\n", msg.msgType, msg.msgParam, msg.msgCount);
       }
       GUI_Display();
     }

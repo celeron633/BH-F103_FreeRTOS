@@ -31,6 +31,10 @@ void FixMyTime(MyTime *t)
         t->minute += 1;
         t->second = overflowSecond;
     }
+
+    if (t->minute >= 100) {
+        t->minute = 99;
+    }
 }
 
 int MyTime2Seconds(const MyTime *t)

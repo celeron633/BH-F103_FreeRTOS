@@ -4,7 +4,12 @@
 #include "TimerMenu_Start.h"
 #include "TimerMenu_Stop.h"
 
+#include "my_time.h"
+
+#include "event_groups.h"
+
 Menu timerMenu;
+int timerStatus = 0;
 
 // 菜单名称
 static const char *timerMenuName = "计时";
@@ -45,4 +50,16 @@ void TimerMenu_Init()
     // 设置timerMenu的子菜单为timerMenuStart
     Menu_SetFather(&timerMenuStart, &timerMenu);
     Menu_SetFather(&timerMenuStop, &timerMenu);
+
+    timerStatus = TS_STOPPED;
+}
+
+int TimerMenu_GetTimerStatus()
+{
+    return timerStatus;
+}
+
+void TimerMenu_SetTimerStatus(int newStatus)
+{
+    timerStatus = newStatus;
 }

@@ -25,6 +25,7 @@ target_include_directories(userlib INTERFACE
     ../../Menu/SettingsMenu
     ../../Menu/TimerMenu
     ../../GUI
+    ../../Business/Inc
 )
 
 target_sources(userlib INTERFACE
@@ -47,6 +48,7 @@ target_sources(userlib INTERFACE
     ../../Menu/TimerMenu/TimerMenu_Start.c
     ../../Menu/TimerMenu/TimerMenu_Stop.c
     ../../GUI/GUI.c
+    ../../Business/Src/my_time.c
 )
 
 target_link_directories(userlib INTERFACE

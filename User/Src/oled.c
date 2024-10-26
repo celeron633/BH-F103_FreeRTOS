@@ -1,6 +1,7 @@
 #include "oled.h"
 #include "font.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 
 #define OLED_PAGES  8                   // OLED页数
@@ -12,7 +13,7 @@ uint8_t OLED_GRAM[OLED_PAGES][OLED_COLUMN];
 struct OLED_Config g_oledCfg;
 
 // 字体设置
-const ASCIIFont *currFont = &afont16x8;
+static const ASCIIFont *currFont = &afont16x8;
 
 static void OLED_ConfigDisplay(I2C_HandleTypeDef *handle, uint8_t i2cAddr)
 {
@@ -334,6 +335,108 @@ void OLED_DrawRectangle(uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, uin
 	}
 }
 
+void OLED_DrawLine(uint8_t X0, uint8_t Y0, uint8_t X1, uint8_t Y1)
+{
+	int16_t x, y, dx, dy, d, incrE, incrNE, temp;
+	int16_t x0 = X0, y0 = Y0, x1 = X1, y1 = Y1;
+	uint8_t yflag = 0, xyflag = 0;
+	
+	if (y0 == y1)		//横线单独处理
+	{
+		/*0号点X坐标大于1号点X坐标，则交换两点X坐标*/
+		if (x0 > x1) {temp = x0; x0 = x1; x1 = temp;}
+		
+		/*遍历X坐标*/
+		for (x = x0; x <= x1; x ++)
+		{
+			OLED_DrawPoint(x, y0);	//依次画点
+		}
+	}
+	else if (x0 == x1)	//竖线单独处理
+	{
+		/*0号点Y坐标大于1号点Y坐标，则交换两点Y坐标*/
+		if (y0 > y1) {temp = y0; y0 = y1; y1 = temp;}
+		
+		/*遍历Y坐标*/
+		for (y = y0; y <= y1; y ++)
+		{
+			OLED_DrawPoint(x0, y);	//依次画点
+		}
+	}
+	else				//斜线
+	{
+		/*使用Bresenham算法画直线，可以避免耗时的浮点运算，效率更高*/
+		/*参考文档：https://www.cs.montana.edu/courses/spring2009/425/dslectures/Bresenham.pdf*/
+		/*参考教程：https://www.bilibili.com/video/BV1364y1d7Lo*/
+		
+		if (x0 > x1)	//0号点X坐标大于1号点X坐标
+		{
+			/*交换两点坐标*/
+			/*交换后不影响画线，但是画线方向由第一、二、三、四象限变为第一、四象限*/
+			temp = x0; x0 = x1; x1 = temp;
+			temp = y0; y0 = y1; y1 = temp;
+		}
+		
+		if (y0 > y1)	//0号点Y坐标大于1号点Y坐标
+		{
+			/*将Y坐标取负*/
+			/*取负后影响画线，但是画线方向由第一、四象限变为第一象限*/
+			y0 = -y0;
+			y1 = -y1;
+			
+			/*置标志位yflag，记住当前变换，在后续实际画线时，再将坐标换回来*/
+			yflag = 1;
+		}
+		
+		if (y1 - y0 > x1 - x0)	//画线斜率大于1
+		{
+			/*将X坐标与Y坐标互换*/
+			/*互换后影响画线，但是画线方向由第一象限0~90度范围变为第一象限0~45度范围*/
+			temp = x0; x0 = y0; y0 = temp;
+			temp = x1; x1 = y1; y1 = temp;
+			
+			/*置标志位xyflag，记住当前变换，在后续实际画线时，再将坐标换回来*/
+			xyflag = 1;
+		}
+		
+		/*以下为Bresenham算法画直线*/
+		/*算法要求，画线方向必须为第一象限0~45度范围*/
+		dx = x1 - x0;
+		dy = y1 - y0;
+		incrE = 2 * dy;
+		incrNE = 2 * (dy - dx);
+		d = 2 * dy - dx;
+		x = x0;
+		y = y0;
+		
+		/*画起始点，同时判断标志位，将坐标换回来*/
+		if (yflag && xyflag){OLED_DrawPoint(y, -x);}
+		else if (yflag)		{OLED_DrawPoint(x, -y);}
+		else if (xyflag)	{OLED_DrawPoint(y, x);}
+		else				{OLED_DrawPoint(x, y);}
+		
+		while (x < x1)		//遍历X轴的每个点
+		{
+			x ++;
+			if (d < 0)		//下一个点在当前点东方
+			{
+				d += incrE;
+			}
+			else			//下一个点在当前点东北方
+			{
+				y ++;
+				d += incrNE;
+			}
+			
+			/*画每一个点，同时判断标志位，将坐标换回来*/
+			if (yflag && xyflag){OLED_DrawPoint(y, -x);}
+			else if (yflag)		{OLED_DrawPoint(x, -y);}
+			else if (xyflag)	{OLED_DrawPoint(y, x);}
+			else				{OLED_DrawPoint(x, y);}
+		}	
+	}
+}
+
 void OLED_Test()
 {
     OLED_NewFrame();
@@ -412,4 +515,29 @@ void OLED_ShowChinese(uint8_t X, uint8_t Y, const char *Chinese)
 			OLED_ShowImage(X + ((i + 1) / OLED_CHN_CHAR_WIDTH - 1) * 16, Y, 16, 16, OLED_CF16x16[pIndex].Data);
 		}
 	}
+}
+
+void OLED_SetASCIIFont(enum OLED_ASCII_FONT_SIZE font)
+{
+	if (font == O_FONT_8X6) {
+		currFont = &afont8x6;
+	} else if (font == O_FONT_12X6) {
+		currFont = &afont12x6;
+	} else if (font == O_FONT_16X8) {
+		currFont = &afont16x8;
+	} else if (font == O_FONT_24X12) {
+		currFont = &afont24x12;
+	} else {
+		currFont = &afont16x8;
+	}
+}
+
+void OLED_Printf(uint8_t X, uint8_t Y, char *format, ...)
+{
+	char String[30];						//定义字符数组
+	va_list arg;							//定义可变参数列表数据类型的变量arg
+	va_start(arg, format);					//从format开始，接收参数列表到arg变量
+	vsprintf(String, format, arg);			//使用vsprintf打印格式化字符串和参数列表到字符数组中
+	va_end(arg);							//结束变量arg
+	OLED_ShowString(X, Y, String);			//OLED显示字符数组（字符串）
 }
