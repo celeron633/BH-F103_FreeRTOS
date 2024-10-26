@@ -282,13 +282,56 @@ void OLED_ShowString(uint8_t X, uint8_t Y, const char *str)
     }
 }
 
-void OLED_DrawRectangle(int16_t X, int16_t Y, uint8_t width, uint8_t height)
+// void OLED_DrawRectangle(int16_t X, int16_t Y, uint8_t width, uint8_t height)
+// {
+//     for (uint8_t i = 0; i < height; i++) {
+//         for (uint8_t j = 0; j < width; j++) {
+//             OLED_SetPixel(X+j, Y+i);
+//         }
+//     }
+// }
+
+void OLED_DrawPoint(uint8_t X, uint8_t Y)
 {
-    for (uint8_t i = 0; i < height; i++) {
-        for (uint8_t j = 0; j < width; j++) {
-            OLED_SetPixel(X+j, Y+i);
-        }
-    }
+	/*参数检查，保证指定位置不会超出屏幕范围*/
+	if (X > 127) {return;}
+	if (Y > 63) {return;}
+	
+	/*将显存数组指定位置的一个Bit数据置1*/
+	OLED_GRAM[Y / 8][X] |= 0x01 << (Y % 8);
+}
+
+void OLED_DrawRectangle(uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, uint8_t IsFilled)
+{
+	uint8_t i, j;
+	if (!IsFilled)		//指定矩形不填充
+	{
+		/*遍历上下X坐标，画矩形上下两条线*/
+		for (i = X; i < X + Width; i ++)
+		{
+			OLED_DrawPoint(i, Y);
+			OLED_DrawPoint(i, Y + Height - 1);
+		}
+		/*遍历左右Y坐标，画矩形左右两条线*/
+		for (i = Y; i < Y + Height; i ++)
+		{
+			OLED_DrawPoint(X, i);
+			OLED_DrawPoint(X + Width - 1, i);
+		}
+	}
+	else				//指定矩形填充
+	{
+		/*遍历X坐标*/
+		for (i = X; i < X + Width; i ++)
+		{
+			/*遍历Y坐标*/
+			for (j = Y; j < Y + Height; j ++)
+			{
+				/*在指定区域画点，填充满矩形*/
+				OLED_DrawPoint(i, j);
+			}
+		}
+	}
 }
 
 void OLED_Test()
@@ -319,7 +362,7 @@ void OLED_Test()
         }
         i+=3;
         OLED_NewFrame();
-        OLED_DrawRectangle(0, 0, i, 16);
+        OLED_DrawRectangle(0, 0, i, 16, 1);
         OLED_ShowFrame();
         HAL_Delay(100);
     }

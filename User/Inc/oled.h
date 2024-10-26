@@ -32,7 +32,8 @@ void OLED_ShowChar(uint8_t X, uint8_t Y, char c);
 void OLED_ShowString(uint8_t X, uint8_t Y, const char *str);
 void OLED_ShowChinese(uint8_t X, uint8_t Y, const char *Chinese);
 
-void OLED_DrawRectangle(int16_t X, int16_t Y, uint8_t width, uint8_t height);
+void OLED_DrawPoint(uint8_t X, uint8_t Y);
+void OLED_DrawRectangle(int16_t X, int16_t Y, uint8_t width, uint8_t height, int isFilled);
 
 // TEST
 void OLED_Test();
