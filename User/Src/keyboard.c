@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include "TimerMenu_Start.h"
+
 struct KBD_Pin {
     GPIO_TypeDef *gpioPort;
     uint16_t gpioPin;
@@ -69,72 +71,94 @@ int KBD_Loop()
         msg.msgParam = VK_KEY1;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY2) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY2;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY3) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY3;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY4) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY4;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY5) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY5;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY6) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY6;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY7) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY7;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY8) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY8;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY9) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY9;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY_STAR) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY_STAR;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY0) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY0;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY_HASH) {
         msg.msgType = CM_KEYDOWN;
         msg.msgParam = VK_KEY_HASH;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
 
     // 按键抬起
@@ -143,72 +167,96 @@ int KBD_Loop()
         msg.msgParam = VK_KEY1;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (lastState == VK_UNPRESS && nowState == VK_KEY2 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY2;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY3 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY3;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY4 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY4;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY5 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY5;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY6 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY6;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY7 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY7;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY8 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY8;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY9 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY9;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY_STAR && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY_STAR;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY0 && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY0;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
     if (nowState == VK_KEY_HASH && lastState == VK_UNPRESS) {
         msg.msgType = CM_KEYUP;
         msg.msgParam = VK_KEY_HASH;
         msg.msgCount = 1;
         MQ_SendMessage(&msg);
+        xEventGroupSetBits(updateEvent, 0x02);
+
     }
 
     return 0;

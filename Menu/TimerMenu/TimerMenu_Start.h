@@ -4,8 +4,12 @@
 #include "Menu.h"
 #include "my_time.h"
 
+#include "FreeRTOS.h"
+#include "event_groups.h"
+
 extern MyTime myTime;
 extern Menu timerMenuStart; 
+extern  EventGroupHandle_t updateEvent;
 
 void TimerMenuStart_Init();
 
