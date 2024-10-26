@@ -149,7 +149,8 @@ static void TestTask(void *arg)
   (void)arg;
 
   OLED_NewFrame();
-  OLED_ShowChinese(0, 0, "设置");
+  OLED_ShowChinese(0, 0, "开始定时");
+  OLED_ShowChinese(0, 16, "停止计时");
   OLED_ShowFrame();
 
   while (1)
