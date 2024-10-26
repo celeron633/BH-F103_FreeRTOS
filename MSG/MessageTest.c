@@ -13,9 +13,8 @@ int MessageTest_main()
     MQ_SendMessage(&m1);
     MQ_SendMessage(&m2);
 
-    while (!MQ_IsEmpty()) {
-        MSG tmp;
-        MQ_GetMessage(&tmp);
+    MSG tmp;
+    while (MQ_GetMessage(&tmp) != 0) {
         printf("%d\r\n", tmp.msgType);
     }
 
