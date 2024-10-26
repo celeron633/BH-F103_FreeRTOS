@@ -30,6 +30,7 @@ static const uint8_t timerMenuStartIcon[] = {
     0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xf0, 0xf0, 0xf8, 0x7c, 0x7e, 0x3f, 0x1f, 0x0f, 
 };
 MyTime myTime;
+MyTime myTimeBak;
 static EventGroupHandle_t updateEvent;
 TimerHandle_t myTimerHandle;
 
@@ -186,6 +187,7 @@ void TimerMenuStart_Function()
                         vTaskDelay(1000);
                     } else if (confirmResult == 1) {
                         timerStatus = TS_COUNT_DOWN;
+                        myTimeBak = myTime;
                         xTimerStart(myTimerHandle, 0);
                         CreateViewStatus0();
                         OLED_ShowChinese(0, 32, "已经开始");
@@ -198,19 +200,27 @@ void TimerMenuStart_Function()
         } else if (timerStatus == TS_COUNT_DOWN || timerStatus == TS_COUNT_UP) {
             char buf[4] = {0};
 
-            OLED_DrawRectangle(0, 32, 26, 26, 0);
-            OLED_DrawRectangle(30, 32, 26, 26, 0);
+            if (timerStatus == TS_COUNT_DOWN) {
+                // 画一个进度条
+                int origSec = MyTime2Seconds(&myTimeBak);
+                int nowSec = MyTime2Seconds(&myTime);
+                OLED_DrawRectangle(0, 24, (128 * nowSec / origSec), 8, 1);
+                OLED_DrawRectangle(0, 22, 128, 12, 0);
+            }
+
+            OLED_DrawRectangle(0, 38, 26, 26, 0);
+            OLED_DrawRectangle(30, 38, 26, 26, 0);
             // 时间中间的:
-            OLED_ShowChar(58, 32, ':');
-            OLED_DrawRectangle(70, 32, 26, 26, 0);
-            OLED_DrawRectangle(100, 32, 26, 26, 0);
+            OLED_ShowChar(58, 38, ':');
+            OLED_DrawRectangle(70, 38, 26, 26, 0);
+            OLED_DrawRectangle(100, 38, 26, 26, 0);
             
             sprintf(buf, "%02d", myTime.minute);
-            OLED_ShowChar(10, 33, buf[0]);
-            OLED_ShowChar(40, 33, buf[1]);
+            OLED_ShowChar(10, 39, buf[0]);
+            OLED_ShowChar(40, 39, buf[1]);
             sprintf(buf, "%02d", myTime.second);
-            OLED_ShowChar(80, 33, buf[0]);
-            OLED_ShowChar(110, 33, buf[1]);
+            OLED_ShowChar(80, 39, buf[0]);
+            OLED_ShowChar(110, 39, buf[1]);
             xEventGroupWaitBits(updateEvent, 0x01, pdTRUE, pdFALSE, portMAX_DELAY);
             if (MQ_GetMessage(&msg) > 0) {
                 if (msg.msgType == CM_KEYUP) {
