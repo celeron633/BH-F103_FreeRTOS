@@ -14,7 +14,7 @@ struct OLED_Config g_oledCfg;
 // 字体设置
 const ASCIIFont *currFont = &afont16x8;
 
-void OLED_ConfigDisplay(I2C_HandleTypeDef *handle, uint8_t i2cAddr)
+static void OLED_ConfigDisplay(I2C_HandleTypeDef *handle, uint8_t i2cAddr)
 {
     g_oledCfg.i2cHandle = handle;
     g_oledCfg.i2cAddr = i2cAddr;
@@ -41,7 +41,7 @@ static int OLED_WriteData(uint8_t *data, size_t len)
     return HAL_I2C_Master_Transmit(g_oledCfg.i2cHandle, g_oledCfg.i2cAddr, buf, len+1, HAL_MAX_DELAY);
 }
 
-int OLED_InitDisplay()
+static int OLED_InitDisplay()
 {
     // 等待OLED初始化
     HAL_Delay(20);
@@ -81,6 +81,14 @@ int OLED_InitDisplay()
     OLED_WriteCmd(0x8D);	//设置充电泵
     OLED_WriteCmd(0x14);
     OLED_WriteCmd(0xAF);	//开启显示
+
+    return 0;
+}
+
+int OLED_Init()
+{
+    OLED_ConfigDisplay(&hi2c2, 0x78);
+    OLED_InitDisplay();
 
     return 0;
 }
@@ -129,6 +137,7 @@ void OLED_NewFrame()
 }
 
 // 逻辑参考SetPixel
+/*
 void OLED_ClearArea(int16_t X, int16_t Y, uint8_t width, uint8_t height)
 {
    // 这个是像素级别操作, 和DrawImage不同
@@ -140,6 +149,28 @@ void OLED_ClearArea(int16_t X, int16_t Y, uint8_t width, uint8_t height)
             }
         }
    }
+}
+*/
+
+void OLED_ClearArea(int16_t X, int16_t Y, uint8_t Width, uint8_t Height)
+{
+	int16_t i, j;
+	
+	/*参数检查，保证指定区域不会超出屏幕范围*/
+	if (X > 127) {return;}
+	if (Y > 63) {return;}
+	if (X + Width > 128) {Width = 128 - X;}
+	if (Y + Height > 64) {Height = 64 - Y;}
+	
+	for (j = Y; j < Y + Height; j ++)		//遍历指定页
+	{
+		if(j / 8 < 0){continue;}
+		for (i = X; i < X + Width; i ++)	//遍历指定列
+		{
+			if(i < 0){continue;}
+			OLED_GRAM[j / 8][i] &= ~(0x01 << (j % 8));	//将显存数组指定数据清零
+		}
+	}
 }
 
 void OLED_SetPixel(int X, int Y)
@@ -163,6 +194,7 @@ void OLED_ShowFrame()
 }
 
 // image需要按列行式进行存储
+/*
 void OLED_ShowImage(int16_t X, int16_t Y, uint8_t width, uint8_t height, const uint8_t *image)
 {
     // 先清空那片区域
@@ -193,6 +225,43 @@ void OLED_ShowImage(int16_t X, int16_t Y, uint8_t width, uint8_t height, const u
             }
         }
     }
+}
+*/
+void OLED_ShowImage(int16_t X, int16_t Y, uint8_t Width, uint8_t Height, const uint8_t *Image)
+{
+	uint8_t i, j;
+	
+	/*参数检查，保证指定图像不会超出屏幕范围*/
+	if (X > 127) {return;}
+	if (Y > 63) {return;}
+	
+	/*将图像所在区域清空*/
+	OLED_ClearArea(X, Y, Width, Height);
+	
+	/*遍历指定图像涉及的相关页*/
+	/*(Height - 1) / 8 + 1的目的是Height / 8并向上取整*/
+	for (j = 0; j < (Height - 1) / 8 + 1; j ++)
+	{
+		/*遍历指定图像涉及的相关列*/
+		for (i = 0; i < Width; i ++)
+		{
+			/*超出边界，则跳过显示*/
+			if (X + i > 127) {break;}
+			if (Y / 8 + j > 7) {return;}
+			if (X + i < 0)	{continue;}
+			if (Y / 8 + j < 0) {continue;}
+			
+			/*显示图像在当前页的内容*/
+			OLED_GRAM[Y / 8 + j][X + i] |= Image[j * Width + i] << (Y % 8);
+			
+			/*超出边界，则跳过显示*/
+			/*使用continue的目的是，下一页超出边界时，上一页的后续内容还需要继续显示*/
+			if (Y / 8 + j + 1 > 7) {continue;}
+			
+			/*显示图像在下一页的内容*/
+			OLED_GRAM[Y / 8 + j + 1][X + i] |= Image[j * Width + i] >> (8 - Y % 8);
+		}
+	}
 }
 
 void OLED_ShowChar(uint8_t X, uint8_t Y, char c)

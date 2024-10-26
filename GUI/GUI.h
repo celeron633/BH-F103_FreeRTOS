@@ -2,6 +2,7 @@
 #define __GUI_H__
 
 #include <stdint.h>
+#include "Menu.h"
 
 enum{
     GUI_COMMAND_NONE,   // 没指令

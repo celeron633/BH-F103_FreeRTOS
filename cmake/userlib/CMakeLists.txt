@@ -22,6 +22,9 @@ target_include_directories(userlib INTERFACE
     ../../Business/Inc
     ../../MSG
     ../../Menu
+    ../../Menu/SettingsMenu
+    ../../Menu/TimerMenu
+    ../../GUI
 )
 
 target_sources(userlib INTERFACE

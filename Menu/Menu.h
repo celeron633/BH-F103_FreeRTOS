@@ -36,6 +36,7 @@ int Menu_ToFather();
 int Menu_ToChild();
 int Menu_ToNext();
 int Menu_ToPrev();
+int Menu_ToFunction();
 
 void Menu_SetCurrent(Menu *mu);
 Menu * Menu_GetCurrent();

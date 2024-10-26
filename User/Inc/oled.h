@@ -15,8 +15,7 @@ struct OLED_Config {
     uint8_t i2cAddr;
 };
 
-void OLED_ConfigDisplay(I2C_HandleTypeDef *handle, uint8_t i2cAddr);
-int  OLED_InitDisplay();
+int  OLED_Init();
 
 void OLED_SetPos(uint8_t X, uint8_t Y);
 void OLED_SetCursor(uint8_t page, uint8_t X);

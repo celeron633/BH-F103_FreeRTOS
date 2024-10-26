@@ -1,6 +1,6 @@
 #include "MSG.h"
 
-void MSG_init(MSG *msg)
+void MSG_Init(MSG *msg)
 {
     msg->msgType = CM_Init;
     msg->msgParam = VK_UNPRESS;

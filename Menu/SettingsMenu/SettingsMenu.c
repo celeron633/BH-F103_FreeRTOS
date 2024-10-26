@@ -40,4 +40,5 @@ void SettingsMenu_Init()
     Menu_Init(&settingsMenu);
     Menu_SetName(&settingsMenu, settingsMenuName);
     Menu_SetIcon(&settingsMenu, settingsMenuIcon);
+    Menu_SetFunction(&settingsMenu, &SettingsMenu_Function);
 }

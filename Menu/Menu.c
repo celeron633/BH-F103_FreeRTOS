@@ -133,6 +133,15 @@ int Menu_ToPrev()
     return 0;
 }
 
+int Menu_ToFunction()
+{
+    if (currentMenu->function != NULL) {
+        currentMenu->function();
+        return 1;
+    }
+    return 0;
+}
+
 void Menu_SetCurrent(Menu *mu)
 {
     currentMenu = mu;

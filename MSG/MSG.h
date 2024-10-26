@@ -37,6 +37,6 @@ typedef struct Message {
     uint8_t msgCount;                   // 数量
 } MSG;
 
-void MSG_init(MSG *msg);
+void MSG_Init(MSG *msg);
 
 #endif

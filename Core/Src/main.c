@@ -36,6 +36,7 @@
 #include "oled.h"
 
 #include "Message.h"
+#include "GUI.h"
 
 /* USER CODE END Includes */
 
@@ -60,6 +61,8 @@ uint32_t lcdCount = 0;
 extern UART_HandleTypeDef huart1;
 QueueHandle_t kbdQueue;
 EventGroupHandle_t kbdEventGroup;
+
+TimerHandle_t kbdLoopHandler;
 
 /* USER CODE END PV */
 
@@ -101,49 +104,6 @@ HAL_StatusTypeDef HAL_InitSysTick(uint32_t TickPriority)
   return HAL_OK;
 }
 
-void KeyboardScanTask(void * arg)
-{
-  (void)arg;
-
-  while (1)
-  {
-    int k = KBD_Scan();
-    if (k != -1) {
-      xQueueSendToFront(kbdQueue, &k, 0);
-      xEventGroupSetBits(kbdEventGroup, 0x1);
-      // 不要扫描太快
-      vTaskDelay(100);
-    }
-  }
-}
-
-void KeyboardGetCodeTask(void *arg)
-{
-  (void)arg;
-
-  while (1)
-  {
-    int k = 0;
-    xQueueReceive(kbdQueue, (void *)&k, portMAX_DELAY);
-
-    printf("key from queue: %d\r\n", k);
-  }
-}
-
-void KeyboardLEDTask(void *arg)
-{
-  (void)arg;
-
-  while (1)
-  {
-    xEventGroupWaitBits(kbdEventGroup, 0x1, pdTRUE, pdTRUE, portMAX_DELAY);
-    HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_RESET);
-    vTaskDelay(100);
-    HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_SET);
-  }
-  
-}
-
 static void TestTask(void *arg)
 {
   (void)arg;
@@ -155,20 +115,43 @@ static void TestTask(void *arg)
 
   while (1)
   {
-    
     vTaskDelay(100);
   }
-  
 }
 
-TimerHandle_t kbdLoopHandler;
-void KBD_Loop_Task(TimerHandle_t xTimer)
+static void KBD_Loop_Task(TimerHandle_t xTimer)
 {
   (void)xTimer;
   KBD_Loop();
 }
 
-int MessageTest_main();
+static void MainTask(void *arg)
+{
+  (void)arg;
+
+  MSG msg;
+  MSG_Init(&msg);
+  while (1)
+  {
+    if (MQ_GetMessage(&msg) > 0) {
+      if (msg.msgType == CM_KEYUP && msg.msgParam == VK_KEY2) {
+        GUI_ReceiveCommand(GUI_COMMAND_UP);
+      }
+      else if (msg.msgType == CM_KEYUP && msg.msgParam == VK_KEY8) {
+        GUI_ReceiveCommand(GUI_COMMAND_DOWN);
+      }
+      else if (msg.msgType == CM_KEYUP && msg.msgParam == VK_KEY4) {
+        GUI_ReceiveCommand(GUI_COMMAND_LEFT);
+      }
+      else if (msg.msgType == CM_KEYUP && msg.msgParam == VK_KEY6) {
+        GUI_ReceiveCommand(GUI_COMMAND_RIGHT);
+      } else {
+        printf("invalid command, ignore\r\n");
+      }
+      GUI_Display();
+    }
+  }
+}
 
 /* USER CODE END PFP */
 
@@ -214,31 +197,26 @@ int main(void)
   // start systick
   HAL_InitSysTick(uwTickPrio);
 
-  // start TIM6 for i2c delay
-  HAL_TIM_Base_Start(&htim6);
-
   // OLED
-  OLED_ConfigDisplay(&hi2c2, 0x78);
-  OLED_InitDisplay();
+  OLED_Init();
+
+  // GUI
+  GUI_Init();
+  GUI_Display();
 
   // MQ
   MQ_Init();
 
-  // MessageTest_main();
-
-  // 键盘
-  // KBD_Init();
-  // kbdQueue = xQueueCreate(128, sizeof(int));
-  // kbdEventGroup = xEventGroupCreate();
-
-  // 定时任务
+  // 键盘定时任务
   kbdLoopHandler = xTimerCreate("KBD_LOOP", 20, pdTRUE, (void *)1, KBD_Loop_Task);
   xTimerStart(kbdLoopHandler, 0);
 
-  // // 任务
-  // xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
-  // xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
-  xTaskCreate(TestTask, "TEST_TASK", 1024 * 8, NULL, 8, NULL);
+  // 主任务
+  if (xTaskCreate(&MainTask, "MAIN_TASK", 8 * 1024, NULL, 5, NULL) != pdPASS) {
+    printf("create MAIN task failed\r\n");
+  } else {
+    printf("create MAIN task success\r\n");
+  }
   vTaskStartScheduler();
 
   /* USER CODE END 2 */
