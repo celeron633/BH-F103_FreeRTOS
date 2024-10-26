@@ -39,6 +39,11 @@ target_sources(userlib INTERFACE
     ../../MSG/MSG.c
     ../../MSG/MessageTest.c
     ../../Menu/Menu.c
+    ../../Menu/SettingsMenu/SettingsMenu.c
+    ../../Menu/TimerMenu/TimerMenu.c
+    ../../Menu/TimerMenu/TimerMenu_Start.c
+    ../../Menu/TimerMenu/TimerMenu_Stop.c
+    ../../GUI/GUI.c
 )
 
 target_link_directories(userlib INTERFACE
