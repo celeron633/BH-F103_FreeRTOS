@@ -2,12 +2,13 @@
 #include "Menu.h"
 
 #include "TimerMenu_Start.h"
+#include "TimerMenu_Stop.h"
 
 Menu timerMenu;
 
 // 菜单名称
 static const char *timerMenuName = "计时";
-// 图标
+// 图标 时钟
 static const uint8_t timerMenuIcon[] = {
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x80,0xE0,0xF0,0xF8,0xFC,0xFC,0xFE,0xFE,0xDE,
     0x8E,0x04,0x00,0x00,0x00,0x20,0x30,0xF0,0xF0,0x30,0x20,0x00,0x00,0x00,0x04,0x8E,
@@ -31,7 +32,7 @@ static const uint8_t timerMenuIcon[] = {
 
 void TimerMenu_Function()
 {
-    printf("TimerMenu_Function");
+    printf("TimerMenu_Function\r\n");
 }
 
 void TimerMenu_Init()
@@ -42,5 +43,6 @@ void TimerMenu_Init()
     Menu_SetFunction(&timerMenu, &TimerMenu_Function);
 
     // 设置timerMenu的子菜单为timerMenuStart
-    Menu_SetChild(&timerMenu, &timerMenuStart);
+    Menu_SetFather(&timerMenuStart, &timerMenu);
+    Menu_SetFather(&timerMenuStop, &timerMenu);
 }

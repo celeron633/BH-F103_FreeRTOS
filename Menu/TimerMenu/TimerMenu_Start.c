@@ -1,10 +1,11 @@
 #include "TimerMenu_Start.h"
 #include "Menu.h"
-#include "TimerMenu_Stop.h"
+#include "TimerMenu.h"
 
 Menu timerMenuStart;
 
 static const char *timerMenuStartName = "开始计时";
+// 图标 播放
 static const uint8_t timerMenuStartIcon[] = {
     0x00, 0xf0, 0xf8, 0xfc, 0x7e, 0x3e, 0x1f, 0x0f, 0x0f, 0x0f, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 
     0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x0f, 0x0f, 0x0f, 0x1f, 0x3e, 0x7e, 0xfc, 0xf8, 0xf0, 
@@ -22,7 +23,7 @@ static const uint8_t timerMenuStartIcon[] = {
 
 void TimerMenuStart_Function()
 {
-    printf("TimerMenuStart_Function");
+    printf("TimerMenuStart_Function\r\n");
 }
 
 void TimerMenuStart_Init()
@@ -31,7 +32,4 @@ void TimerMenuStart_Init()
     Menu_SetName(&timerMenuStart, timerMenuStartName);
     Menu_SetIcon(&timerMenuStart, timerMenuStartIcon);
     Menu_SetFunction(&timerMenuStart, &TimerMenuStart_Function);
-
-    // 设置timerMenuStart的兄弟节点为timerMenuStop
-    Menu_SetNext(&timerMenuStart, &timerMenuStop);
 }

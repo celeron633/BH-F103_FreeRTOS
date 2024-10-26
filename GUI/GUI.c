@@ -14,9 +14,10 @@ extern I2C_HandleTypeDef hi2c2;
 
 int GUI_Init()
 {
-    TimerMenu_Init();
+    // 子Menu节点先初始化, 避免错误设置father, child为NULL
     TimerMenuStart_Init();
     TimerMenuStop_Init();
+    TimerMenu_Init();
     SettingsMenu_Init();
 
     Menu_SetNext(&timerMenu, &settingsMenu);
