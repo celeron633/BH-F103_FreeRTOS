@@ -257,3 +257,47 @@ void OLED_Test()
     
 
 }
+
+/**
+  * 函    数：OLED显示汉字串
+  * 参    数：X 指定汉字串左上角的横坐标，范围：0~127
+  * 参    数：Y 指定汉字串左上角的纵坐标，范围：0~63
+  * 参    数：Chinese 指定要显示的汉字串，范围：必须全部为汉字或者全角字符，不要加入任何半角字符
+  *           显示的汉字需要在OLED_Data.c里的OLED_CF16x16数组定义
+  *           未找到指定汉字时，会显示默认图形（一个方框，内部一个问号）
+  * 返 回 值：无
+  * 说    明：调用此函数后，要想真正地呈现在屏幕上，还需调用更新函数
+  */
+void OLED_ShowChinese(uint8_t X, uint8_t Y, const char *Chinese)
+{
+	uint8_t pChinese = 0;
+	uint8_t pIndex;
+	uint8_t i;
+	char SingleChinese[OLED_CHN_CHAR_WIDTH + 1] = {0};
+	
+	for (i = 0; Chinese[i] != '\0'; i ++)		//遍历汉字串
+	{
+		SingleChinese[pChinese] = Chinese[i];	//提取汉字串数据到单个汉字数组
+		pChinese ++;							//计次自增
+		
+		/*当提取次数到达OLED_CHN_CHAR_WIDTH时，即代表提取到了一个完整的汉字*/
+		if (pChinese >= OLED_CHN_CHAR_WIDTH)
+		{
+			pChinese = 0;		//计次归零
+			
+			/*遍历整个汉字字模库，寻找匹配的汉字*/
+			/*如果找到最后一个汉字（定义为空字符串），则表示汉字未在字模库定义，停止寻找*/
+			for (pIndex = 0; strcmp(OLED_CF16x16[pIndex].Index, "") != 0; pIndex ++)
+			{
+				/*找到匹配的汉字*/
+				if (strcmp(OLED_CF16x16[pIndex].Index, SingleChinese) == 0)
+				{
+					break;		//跳出循环，此时pIndex的值为指定汉字的索引
+				}
+			}
+			
+			/*将汉字字模库OLED_CF16x16的指定数据以16*16的图像格式显示*/
+			OLED_ShowImage(X + ((i + 1) / OLED_CHN_CHAR_WIDTH - 1) * 16, Y, 16, 16, OLED_CF16x16[pIndex].Data);
+		}
+	}
+}

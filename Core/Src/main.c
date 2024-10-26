@@ -148,12 +148,13 @@ static void TestTask(void *arg)
 {
   (void)arg;
 
+  OLED_NewFrame();
+  OLED_ShowChinese(0, 0, "设置");
+  OLED_ShowFrame();
+
   while (1)
   {
-    MSG tmpMsg;
-    if(MQ_GetMessage(&tmpMsg)) {
-      printf("msg: %d %d %d\r\n", tmpMsg.msgType, tmpMsg.msgParam, tmpMsg.msgCount);
-    } 
+    
     vTaskDelay(100);
   }
   
@@ -236,7 +237,7 @@ int main(void)
   // // 任务
   // xTaskCreate(KeyboardScanTask, "KBD_SCAN", 256, NULL, 10, NULL);
   // xTaskCreate(KeyboardLEDTask, "KBD_LED", 256, NULL, 8, NULL);
-  xTaskCreate(TestTask, "TEST_TASK", 1024, NULL, 8, NULL);
+  xTaskCreate(TestTask, "TEST_TASK", 1024 * 8, NULL, 8, NULL);
   vTaskStartScheduler();
 
   /* USER CODE END 2 */

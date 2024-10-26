@@ -18,6 +18,7 @@ extern const ASCIIFont afont24x12;
  * @note  字库前4字节存储utf8编码 剩余字节存储字模数据
  * @note 字库数据可以使用波特律动LED取模助手生成(https://led.baud-dance.com)
  */
+/*
 typedef struct Font {
   uint8_t h;              // 字高度
   uint8_t w;              // 字宽度
@@ -27,6 +28,7 @@ typedef struct Font {
 } Font;
 
 extern const Font font16x16;
+*/
 
 /**
  * @brief 图片结构体
@@ -39,5 +41,19 @@ typedef struct Image {
 } Image;
 
 extern const Image bilibiliImg;
+
+// 中文字体
+
+/*中文字符字节宽度*/
+#define OLED_CHN_CHAR_WIDTH			3		//UTF-8编码格式给3，GB2312编码格式给2
+
+/*字模基本单元*/
+typedef struct 
+{
+	char Index[OLED_CHN_CHAR_WIDTH + 1];	//汉字索引
+	uint8_t Data[32];						//字模数据
+} ChineseCell_t;
+extern const ChineseCell_t OLED_CF16x16[];
+
 
 #endif // __FONT_H
