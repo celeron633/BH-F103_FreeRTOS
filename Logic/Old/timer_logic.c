@@ -1,5 +1,5 @@
 #include "timer_logic.h"
-#include "my_time.h"
+#include "MyTime.h"
 #include "timer_menu.h"
 #include "font.h"
 

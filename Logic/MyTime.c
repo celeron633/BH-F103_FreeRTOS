@@ -1,4 +1,4 @@
-#include "my_time.h"
+#include "MyTime.h"
 
 #include <string.h>
 #include <stdio.h>
