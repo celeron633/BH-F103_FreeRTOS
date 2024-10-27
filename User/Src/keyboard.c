@@ -4,7 +4,10 @@
 
 #include <stdint.h>
 
-#include "TimerMenu_Start.h"
+#include "FreeRTOS.h"
+#include "event_groups.h"
+
+extern EventGroupHandle_t updateEvent;
 
 struct KBD_Pin {
     GPIO_TypeDef *gpioPort;

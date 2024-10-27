@@ -50,6 +50,7 @@ target_sources(userlib INTERFACE
     ../../Menu/TimerMenu/TimerMenu_Stop.c
     ../../GUI/GUI.c
     ../../Logic/MyTime.c
+    ../../Logic/TimerLogic/TimerLogic.c
 )
 
 target_link_directories(userlib INTERFACE

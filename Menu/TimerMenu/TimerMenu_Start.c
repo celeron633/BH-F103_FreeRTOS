@@ -1,14 +1,16 @@
 #include "TimerMenu_Start.h"
-#include "Menu.h"
-#include "TimerMenu.h"
+
+#include "oled.h"
 
 #include "Message.h"
-#include "oled.h"
-#include "MyTime.h"
-
+#include "TimerLogic.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+
+// vTaskDelay
+#include "FreeRTOS.h"
+#include "task.h"
 
 Menu timerMenuStart;
 
@@ -28,17 +30,6 @@ static const uint8_t timerMenuStartIcon[] = {
     0x00, 0x0f, 0x1f, 0x3f, 0x7e, 0x7c, 0xf8, 0xf0, 0xf0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 
     0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xf0, 0xf0, 0xf8, 0x7c, 0x7e, 0x3f, 0x1f, 0x0f, 
 };
-MyTime myTime;
-MyTime myTimeBak;
-EventGroupHandle_t updateEvent;
-TimerHandle_t myTimerHandle;
-
-static void Timer_Task(TimerHandle_t xTimer)
-{
-    (void)xTimer;
-    MyTimeDec(&myTime);
-    xEventGroupSetBits(updateEvent, 0x01);
-}
 
 static void CreateViewStatus0()
 {
@@ -47,13 +38,13 @@ static void CreateViewStatus0()
     OLED_ShowChinese(0, 0, "状态");
     OLED_ShowChar(32, 0, ':');
 
-    if (timerStatus == TS_STOPPED) {
+    if (TimerLogic_GetTimerStatus() == TS_STOPPED) {
         OLED_ShowChinese(96, 0, "停止");
-    } else if (timerStatus == TS_COUNT_DOWN) {
+    } else if (TimerLogic_GetTimerStatus() == TS_COUNT_DOWN) {
         OLED_ShowChinese(96, 0, "向下");
-    } else if (timerStatus == TS_COUNT_UP) {
+    } else if (TimerLogic_GetTimerStatus() == TS_COUNT_UP) {
         OLED_ShowChinese(96, 0, "向上");
-    } else if (timerStatus == TS_PAUSED) {
+    } else if (TimerLogic_GetTimerStatus() == TS_PAUSED) {
         OLED_ShowChinese(96, 0, "暂停");
     }
 
@@ -64,9 +55,9 @@ static int CreateViewConfirm0()
 {
     OLED_NewFrame();
     OLED_ShowChinese(0, 0, "时间是");
-    OLED_Printf(0, 16, "%02d", myTime.minute);
+    OLED_Printf(0, 16, "%02d", TimerLogic_GetCurrTime()->minute);
     OLED_ShowChinese(16, 16, "分");
-    OLED_Printf(32, 16, "%02d", myTime.second);
+    OLED_Printf(32, 16, "%02d", TimerLogic_GetCurrTime()->second);
     OLED_ShowChinese(48, 16, "秒");
 
     OLED_ShowChinese(0, 32, "按");
@@ -143,14 +134,14 @@ static int SetupTimerView(void)
     tmpBuffer[0] = buffer[0];
     tmpBuffer[1] = buffer[1];
     tmpBuffer[2] = 0;
-    myTime.minute = atoi(tmpBuffer);
+    TimerLogic_GetCurrTime()->minute = atoi(tmpBuffer);
 
     tmpBuffer[0] = buffer[2];
     tmpBuffer[1] = buffer[3];
     tmpBuffer[2] = 0;
-    myTime.second = atoi(tmpBuffer);
+    TimerLogic_GetCurrTime()->second = atoi(tmpBuffer);
 
-    printf("minute: %d, second: %d\r\n", myTime.minute, myTime.second);
+    printf("minute: %d, second: %d\r\n", TimerLogic_GetCurrTime()->minute, TimerLogic_GetCurrTime()->second);
 
     return 0;
 }
@@ -159,10 +150,10 @@ static int ShowTimerProgressView()
 {
     MSG msg;
     char buf[4] = {0};
-    if (timerStatus == TS_COUNT_DOWN) {
+    if (TimerLogic_GetTimerStatus() == TS_COUNT_DOWN) {
         // 画一个进度条
-        int origSec = MyTime2Seconds(&myTimeBak);
-        int nowSec = MyTime2Seconds(&myTime);
+        int origSec = TimerLogic_GetOrigSec();
+        int nowSec = TimerLogic_GetCurrSec();
         double val = 128.0 * nowSec / origSec;
         OLED_ClearArea(0, 22, 128, 12);
         OLED_DrawRectangle(0, 24, (int)val, 8, 1);
@@ -176,13 +167,13 @@ static int ShowTimerProgressView()
     OLED_DrawRectangle(70, 38, 26, 26, 0);
     OLED_DrawRectangle(100, 38, 26, 26, 0);
     
-    sprintf(buf, "%02d", myTime.minute);
+    sprintf(buf, "%02d", TimerLogic_GetCurrTime()->minute);
     OLED_ShowChar(10, 39, buf[0]);
     OLED_ShowChar(40, 39, buf[1]);
-    sprintf(buf, "%02d", myTime.second);
+    sprintf(buf, "%02d", TimerLogic_GetCurrTime()->second);
     OLED_ShowChar(80, 39, buf[0]);
     OLED_ShowChar(110, 39, buf[1]);
-    xEventGroupWaitBits(updateEvent, 0x03, pdTRUE, pdFALSE, portMAX_DELAY);
+    TimerLogic_WaitTimerEvent();
     if (MQ_GetMessage(&msg) > 0) {
         if (msg.msgType == CM_KEYUP) {
             return 1;
@@ -201,7 +192,7 @@ void TimerMenuStart_Function()
     CreateViewStatus0();
     while (1)
     {
-        if (timerStatus == TS_STOPPED) {
+        if (TimerLogic_GetTimerStatus() == TS_STOPPED) {
             OLED_ShowChinese(0, 16, "按");
             OLED_ShowChar(16, 16, '8');
             OLED_ShowChinese(24, 16, "退出");
@@ -212,7 +203,7 @@ void TimerMenuStart_Function()
                     return;
                 } else if (msg.msgType == CM_KEYUP && msg.msgParam != VK_KEY8) {    // 按其他进行继续操作
                     SetupTimerView();
-                    FixMyTime(&myTime);
+                    FixMyTime(TimerLogic_GetCurrTime());
                     int confirmResult = CreateViewConfirm0();
                     if (confirmResult == 0) {
                         CreateViewStatus0();
@@ -220,9 +211,8 @@ void TimerMenuStart_Function()
                         OLED_ShowFrame();
                         vTaskDelay(1000);
                     } else if (confirmResult == 1) {
-                        timerStatus = TS_COUNT_DOWN;
-                        myTimeBak = myTime;
-                        xTimerStart(myTimerHandle, 0);
+                        TimerLogic_SetTimerStatus(TS_COUNT_DOWN);
+                        TimerLogic_StartCountDown();
                         CreateViewStatus0();
                         OLED_ShowChinese(0, 32, "已经开始");
                         OLED_ShowFrame();
@@ -241,7 +231,7 @@ void TimerMenuStart_Function()
                     return;
                 }
             }
-        } else if (timerStatus == TS_COUNT_DOWN || timerStatus == TS_COUNT_UP) {
+        } else if (TimerLogic_GetTimerStatus() == TS_COUNT_DOWN || TimerLogic_GetTimerStatus() == TS_COUNT_UP) {
             if (ShowTimerProgressView() > 0) {
                 return;
             }
@@ -258,6 +248,5 @@ void TimerMenuStart_Init()
     Menu_SetIcon(&timerMenuStart, timerMenuStartIcon);
     Menu_SetFunction(&timerMenuStart, &TimerMenuStart_Function);
 
-    updateEvent = xEventGroupCreate();
-    myTimerHandle = xTimerCreate("TIMER_TASK", 1000, pdTRUE, (void *)1, Timer_Task);
+    TimerLogic_Init();
 }
